@@ -19,7 +19,6 @@ gamma = 42.5756; %MHz/T
 FOV = 128; %mm
 Mat = floor(200*pi);
 Kmax2Pi=0;
-Position = [];%phantomP;
 offres=200;%Hz
 dG=offres./gamma./FOV;%mT/m
 MRF=cell(3,1);

@@ -64,10 +64,14 @@ sequence.ktolerance_phys=1.e-6;         % 3d k-vectors gridding size 1e-3 = 1*(1
 sequence.nOutput=1;
 matlabseq = 'matlabseq_1.txt';
 matlab2c(sequence, matlabseq);
-if isunix
+if ismac
+    string = ['./3D_SR-PG_ios.out ',matlabseq];    
+elseif isunix
     string = ['./3D_SR-PG.out ',matlabseq];
-else
+elseif ispc
     string = ['3D_SR-PG.exe ',matlabseq];
+else
+    disp('Platform not supported')    
 end
 
 %==========================================================================

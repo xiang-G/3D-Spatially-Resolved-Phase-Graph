@@ -91,7 +91,10 @@ for irep=1:Rep
     sequence{irep}.nOutput = 20+irep;
     matlabseq = ['matlabseq_',int2str(sequence{irep}.nOutput),'.txt'];
     matlab2c(sequence{irep}, matlabseq);
-    if isunix
+
+    if ismac
+        string{irep} = ['./3D_SR-PG_ios.out ',matlabseq];
+    elseif isunix
         string{irep} = ['./3D_SR-PG.out ',matlabseq];
     else
         string{irep} = ['3D_SR-PG.exe ',matlabseq];
