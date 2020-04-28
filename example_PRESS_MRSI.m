@@ -37,7 +37,7 @@ else
     Gy = [(-KSpoil1-KGs/2)/TE1hf; (-KSpoil1-KGs/2)/TE1hf; -KSpoil2/TE2hf;         -KSpoil2/TE2hf;0;0]./gamma;
     Gz = [-KSpoil1/TE1hf;         0/TE1hf;                (0-KGs/2)/TE2hf;        (KSpoil2-KGs/2)/TE2hf;0;0]./gamma;
 end
-dG = 0.01*Gs.*[1,2,3];
+dG = 0.00*Gs.*[1,2,3];
 Gx = Gx+dG(1);  Gy = Gy+dG(2);  Gz = Gz+dG(3);
 
 %==========================================================================
