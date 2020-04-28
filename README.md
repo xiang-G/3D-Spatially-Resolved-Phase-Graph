@@ -1,5 +1,6 @@
-"# 3D-Spatially-Resolved-Phase-Graph" 
-A new open source recursive magnetization evolution algorithm is proposed for simulating arbitrary pulse sequences in presence of time-variant gradients with arbitrary orientations in three dimensions. It overcomes the sequence symmetry requirements of the extended phase graph algorithm for solving the Bloch equation efficiently, and could present the signal modulation in the 3D spatial domain.
+# 3D-Spatially-Resolved-Phase-Graph 
+A new open source recursive magnetization evolution algorithm is proposed for simulating arbitrary pulse sequences in presence of *time-variant gradients* with *arbitrary orientations* in three dimensions. 
+It overcomes the sequence symmetry requirements of the extended phase graph algorithm for solving the Bloch equation efficiently, and could present the signal modulation in the 3D spatial domain.
 
 #Author： Xiang Gao, xiang.gao@uniklinik-freiburg.de
 
