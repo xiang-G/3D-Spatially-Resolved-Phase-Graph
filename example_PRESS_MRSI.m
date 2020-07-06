@@ -1,172 +1,165 @@
 % example_PRESS_MRSI.m
-% conventional spoiler scheme vs. DOCTOPS spoiler scheme
+% signal evolution in 3d k-space domain & image domain
 % author: xiang gao
 % xiang.gao@uniklinik-freiburg.de
 
 clear;clc;clear global;
 global FOV;
 global Mat;
-global Kmax2Pi;     %Skope of 3D-K space
-global TDImage;     %Output 3D image or 1D signal intensity
+global Kmax2Pi;     %Scope of 3D k-space mapping
+global TDImage;     %Output 3D spatial modulation function or 1D signal intensity
 TDImage=true;
-ConventionalSpoiler = true;
-saveimage=false;
 
 %==========================================================================
 %% sequence preparation
 %==========================================================================
+Nphaccyc=1; %num of phase cycle;
 gamma = 42.5756; %MHz/T
 FOV = 48; %mm
 Mat = 16;
-Kmax2Pi= 1.5; %default Kmax2Pi=3;
+Kmax2Pi= 0.5; %default Kmax2Pi=3;
 Position = [];%phantomP;
-RF_BandWidth = 1200; %Hz
-RF_Duration = 5; %ms
-Gs = RF_BandWidth/gamma/FOV;%mT/(m*ms)
-KGs = Gs*RF_Duration*gamma;
+RF_BandWidth = 4000; %Hz
+Gs = RF_BandWidth/gamma/FOV;%mT/m
+Gs_Duration = 4; %ms
+KGs = Gs*Gs_Duration*gamma;
 TE1hf = 7; %ms
 TE2hf = 8; %ms
-KSpoil1 = 10000./FOV; %1/m
-KSpoil2 = 10000./FOV; %1/m
-if ConventionalSpoiler
-    Gx = [-KSpoil1/TE1hf;         -KSpoil1/TE1hf;         -KSpoil2/TE2hf;         -KSpoil2/TE2hf;0;0]./gamma;
-    Gy = [(-KSpoil1-KGs/2)/TE1hf; (-KSpoil1-KGs/2)/TE1hf; -KSpoil2/TE2hf;         -KSpoil2/TE2hf;0;0]./gamma;
-    Gz = [-KSpoil1/TE1hf;         -KSpoil1/TE1hf;         (-KSpoil2-KGs/2)/TE2hf; (-KSpoil2-KGs/2)/TE2hf;0;0]./gamma;
-else
-    Gx = [-KSpoil1/TE1hf;         -KSpoil1/TE1hf;         -KSpoil2/TE2hf;         -KSpoil2/TE2hf;0;0]./gamma;
-    Gy = [(-KSpoil1-KGs/2)/TE1hf; (-KSpoil1-KGs/2)/TE1hf; -KSpoil2/TE2hf;         -KSpoil2/TE2hf;0;0]./gamma;
-    Gz = [-KSpoil1/TE1hf;         0/TE1hf;                (0-KGs/2)/TE2hf;        (KSpoil2-KGs/2)/TE2hf;0;0]./gamma;
-end
-dG = 0.00*Gs.*[1,2,3];
-Gx = Gx+dG(1);  Gy = Gy+dG(2);  Gz = Gz+dG(3);
+KSpoil1 = 20000./FOV; %1/m
+KSpoil2 = 20000./FOV; %1/m
+Gx = [-KSpoil1/TE1hf;         -KSpoil1/TE1hf;         -KSpoil2/TE2hf;         -KSpoil2/TE2hf;0;0]./gamma;
+Gy = [(-KSpoil1-KGs/2)/TE1hf; (-KSpoil1-KGs/2)/TE1hf; -KSpoil2/TE2hf;         -KSpoil2/TE2hf;0;0]./gamma;
+Gz = [-KSpoil1/TE1hf;         -KSpoil1/TE1hf;         (-KSpoil2-KGs/2)/TE2hf; (-KSpoil2-KGs/2)/TE2hf;0;0]./gamma;
+
+% freqoff=[0,0,0];
+freqoff=1*[1,0.5,1.5]; %hz/cm
+dG = freqoff./10./gamma;
+Gx = Gx+dG(:,1);  Gy = Gy+dG(:,2);  Gz = Gz+dG(:,3);
 
 %==========================================================================
 %% simulation preparation
 %==========================================================================
-NPulse=6;
-sequence.npulse=NPulse;
-sequence.time=[TE1hf;TE1hf;TE2hf;TE2hf;20;40];% ms
-sequence.echo=[TE1hf;TE1hf;TE2hf;TE2hf;20;40];% ms
-sequence.gradx=Gx;
-sequence.grady=Gy;
-sequence.gradz=Gz;
-sequence.velocityx=zeros(1,NPulse);     % transport velocity in mm/s
-sequence.velocityy=zeros(1,NPulse);     % transport velocity in mm/s
-sequence.velocityz=zeros(1,NPulse);     % transport velocity in mm/s
-sequence.angle=[90/2;180/2;0;180/2;0;0];
-sequence.axes=[0,90*ones(1,NPulse-1)];  % rotation axis.
-sequence.diff=0;                        % mcm^2/ms  %2 for water
-sequence.T1=0;                          % ms, 0 equivalent to infinity
-sequence.T2=0;                          % ms, 0 equivalent to infinity
-sequence.Omega=0;                       % Hz, frequency offset
-sequence.ktolerance=1.e-8;              % computational parameter:
-sequence.ktolerance_phys=1.e-6;         % 3d k-vectors gridding size 1e-3 = 1*(1/mm)
-sequence.nOutput=1;
-matlabseq = 'matlabseq_1.txt';
-matlab2c(sequence, matlabseq);
-if ismac
-    string = ['./3D_SR-PG_ios.out ',matlabseq];    
-elseif isunix
-    string = ['./3D_SR-PG.out ',matlabseq];
-elseif ispc
-    string = ['3D_SR-PG.exe ',matlabseq];
-else
-    disp('Platform not supported')    
+sequence=cell(Nphaccyc,1);
+for i=1:Nphaccyc
+    NPulse=6;
+    sequence{i}.npulse=NPulse;
+    sequence{i}.time=[TE1hf;TE1hf;TE2hf;TE2hf;250;250];% ms
+    sequence{i}.echo=[TE1hf;TE1hf;TE2hf;TE2hf;250;250];% ms
+    sequence{i}.gradx=Gx;
+    sequence{i}.grady=Gy;
+    sequence{i}.gradz=Gz;
+    sequence{i}.velocityx=zeros(1,NPulse);     % transport velocity in mm/s
+    sequence{i}.velocityy=zeros(1,NPulse);     % transport velocity in mm/s
+    sequence{i}.velocityz=zeros(1,NPulse);     % transport velocity in mm/s
+    sequence{i}.angle=[90/2;180/2;0;180/2;0;0];
+    sequence{i}.axes=[0,0*ones(1,NPulse-1)];  % rotation axis.
+    [phs1,phs2,phs3]=press_phacyc(i,Nphaccyc);
+    sequence{i}.axes=[phs1,phs2,0,phs3,0,0];  % rotation axis.
+    % sequence.diff=0;                        % mcm^2/ms  %2 for water
+    sequence{i}.diffTensor=[0;0;0;0;0;0;0;0;0];  % mcm^2/ms  %2 for water
+    sequence{i}.T1=0;                          % ms, 0 equivalent to infinity
+    sequence{i}.T2=0;                          % ms, 0 equivalent to infinity
+    sequence{i}.Omega=0;                       % Hz, frequency offset
+    sequence{i}.ktolerance=1.e-8;              % computational parameter:
+    sequence{i}.ktolerance_phys=1.e-6;         % 3d k-vectors gridding size 1e-3 = 1 rad/mm
+    sequence{i}.nOutput=i;
+    matlabseq = ['matlabseq_',int2str(sequence{i}.nOutput),'.txt'];
+    matlab2c(sequence{i}, matlabseq);
+    string{i} = ['3D_SR-PG_tensor.exe ',matlabseq];
 end
-
 %==========================================================================
-%% simulation execution && signal calculation
+%% simulation execution
 %==========================================================================
-tic
-system(string);
-toc
-logData=KmapSignal2(['output',int2str(sequence.nOutput),'.txt']);%faster, but need preallocate memory(!).
-logData.sequence = sequence;
+sig_phacyc=0;
+for i=1:Nphaccyc
+    tic
+    system(string{i});
+    toc
+    logData=KmapSignal2(['output',int2str(sequence{i}.nOutput),'.txt']);%faster, but need preallocate memory(!).
+    logData.sequence = sequence{i};
+    sig_phacyc=logData.signal+sig_phacyc;
+end
+logData.signal=sig_phacyc/Nphaccyc;
+logData=clean_signal(logData,sequence{1}.ktolerance);%clean residual signal(noise) from sig_phacyc/Nphaccyc
 logData=IMG_DFT(logData,Position);
-
-% 3D-Kmap
-% 3d k-vectors
-dKx = 1/FOV*1e3;%1/m  (post-gradding)
-dKy = 1/FOV*1e3;%1/m
-dKz = 1/FOV*1e3;%1/m
-NKperEcho=logData.NKperEcho;
-kvector = logData.kvector./2/pi*1e6; %1/m
-signal = abs(logData.signal(:,1)+1i*logData.signal(:,2));
-if Kmax2Pi
-    Kmax=[1,1,1]*Kmax2Pi*1e3; %1/m
-else
-    Kmax=max(abs(kvector(1:end,:))); %1/m
-    disp(Kmax)
-end
-Kgrid3D=zeros(2*ceil(Kmax(1)/dKx)+1,2*ceil(Kmax(2)/dKy)+1,2*ceil(Kmax(3)/dKz)+1,numel(NKperEcho)-1);
-for necho=1:numel(NKperEcho)-1
-    Kgrid=zeros(2*ceil(Kmax(1)/dKx)+1,2*ceil(Kmax(2)/dKy)+1,2*ceil(Kmax(3)/dKz)+1);
-    shift=[abs(ceil(Kmax(1)/dKx)+1),abs(ceil(Kmax(2)/dKy)+1),abs(ceil(Kmax(3)/dKy)+1)];
-    for i=NKperEcho(necho)+1:NKperEcho(necho+1)
-        bins = [myfloor(kvector(i,1)/dKx),myfloor(kvector(i,2)/dKy),myfloor(kvector(i,3)/dKz)]+shift;
-        Kgrid(bins(1),bins(2),bins(3))=Kgrid(bins(1),bins(2),bins(3))+signal(i);
-    end
-    Kgrid3D(:,:,:,necho) = Kgrid;
-end
-% receive zone
-background = zeros(size(Kgrid3D));
-bg1_st = ceil((size(Kgrid3D,1)-Mat)/2);
-bg2_st = ceil((size(Kgrid3D,2)-Mat)/2);
-bg3_st = ceil((size(Kgrid3D,3)-Mat)/2);
-if Mat<=1
-    for necho=1:numel(NKperEcho)-1
-        background(bg1_st+1,bg2_st+1,bg3_st+1,necho)=1;
-    end
-else
-    for necho=1:numel(NKperEcho)-1
-        background(bg1_st:Mat/2:bg1_st+Mat,bg2_st:Mat/2:bg2_st+Mat,bg3_st:Mat/2:bg3_st+Mat,necho)=1;
-    end
-end
-
+%==========================================================================
+%% simulation execution (auto adjusting k-grid)
+%==========================================================================
+% error_tolerance = 0.05; % MSE error changes below tolerance =5%
+% ktolerance_phys_step = 0.2; % every step, ktol set as 20% of previous one
+% ktolerance_phys_hard_quit = sequence{1}.ktolerance;
+%
+% error_calc = 1;
+% sig_last = 0;
+% while error_calc>error_tolerance
+%     sig_phacyc=0;
+%     for i=1:Nphaccyc
+%         system(string{i});
+%         logData=KmapSignal2(['output',int2str(sequence{i}.nOutput),'.txt']);%faster, but need preallocate memory(!).
+%         sig_phacyc=logData.signal+sig_phacyc;
+%     end
+%     logData.signal=sig_phacyc/Nphaccyc;
+%     logData=clean_signal(logData,sequence{1}.ktolerance);%suppose signal noise threshold = kcalc precision.
+%     sig_cur = sum(abs(logData.signal(:,1)+1i*logData.signal(:,2)));
+%     error_calc = abs(sig_cur-sig_last)./sig_last;
+%     disp(['MSE_calc= ',mat2str(error_calc)]);
+%     disp(['searching ktolerance_phys= ',mat2str(sequence{1}.ktolerance_phys)]);
+%     if sequence{1}.ktolerance_phys < ktolerance_phys_hard_quit
+%         break;
+%     end
+%     sig_last = sig_cur;
+%
+%     for i=1:Nphaccyc
+%         sequence{i}.ktolerance_phys=sequence{i}.ktolerance_phys*ktolerance_phys_step;
+%         matlabseq = ['matlabseq_',int2str(sequence{i}.nOutput),'.txt'];
+%         matlab2c(sequence{i}, matlabseq);
+%     end
+% end
+% disp(['auto ktolerance_phys= ',mat2str(sequence{1}.ktolerance_phys)]);
+% logData.sequence = sequence{1};
+% logData=IMG_DFT(logData,Position);
 %==========================================================================
 %% OUTPUT
 %==========================================================================
-% 3D kspace graph
-figure;hold on;
-set(gcf,'outerposition',[0 0 1000 800]);
-for i=1:numel(NKperEcho)-1
-    subplot(2,ceil((numel(NKperEcho)-1)/2),i)
-    plot_3dkmap(squeeze((Kgrid3D(:,:,:,i))),background(:,:,:,i)./10,i)%3D(x,y,z) on third echo
-end
-hold off
-if saveimage
-    if ConventionalSpoiler
-        print(gcf, '-dpng', '-r150', ['conventional_mat',mat2str(Mat),'_K.png']);
-    else
-        print(gcf, '-dpng', '-r150', ['new_mat',mat2str(Mat),'_K.png']);
-    end
+%% prep 3D kspace graph
+% post-gradding for 3d kmap (due to memory limitation)
+Post_grid=[1,1,1]; %post-grid for dKx,dKy,dKz
+dK = Post_grid/FOV*1e3;%1/m
+[Kgrid3D, Bgrid3D]=prep_3dkmap(logData,dK);
+% we plot from second echo
+Nimg=NPulse-2;
+nth = [2,4,5,6];
+%% plot 3D kspace graph
+figure; set(gcf,'outerposition',[0 0 1000 800]);
+for i=1:Nimg
+    subplot(2,Nimg/2,i);
+    plot_3dkmap(squeeze((Kgrid3D(:,:,:,nth(i)))),Bgrid3D(:,:,:,nth(i)),i)
 end
 
-% projected images
-figure;
-set(gcf,'outerposition',[0 0 500 400]);
-for i=1:3*(NPulse-1)
-    subplot(3,NPulse-1,i)
-    imagesc(single(logData.sig3d(:,:,i)));
+%% plot projected image
+figure; set(gcf,'outerposition',[0 0 500 400]);colormap gray;
+for i=1:Nimg
+    subplot(3,Nimg,i)
+    imagesc(single(logData.sig3d(:,:,nth(i),1)));caxis([0,0.4]);
     title(['Time ',int2str(i)]);
-    if i==1
-        ylabel('XY','FontWeight','bold');
-    elseif i==NPulse
-        ylabel('YZ','FontWeight','bold');
-    elseif i==2*NPulse-1
-        ylabel('XZ','FontWeight','bold');
-    end
+    if i==1;ylabel('XY','FontWeight','bold');end
+    if i==Nimg;colorbar('Manual', 'position', [0.93 0.1 0.02 0.81]);end
     xticks(1:(Mat-1)/2:Mat);xticklabels({int2str(-FOV/2),'0',int2str(FOV/2)});
     yticks(1:(Mat-1)/2:Mat);yticklabels({int2str(-FOV/2),'0',int2str(FOV/2)});
-    colormap gray;
 end
-
-if saveimage
-    if ConventionalSpoiler
-        print(gcf, '-dpng', '-r150', ['conventional_mat',mat2str(Mat),'_I.png']);
-    else
-        print(gcf, '-dpng', '-r150', ['new_mat',mat2str(Mat),'_I.png']);
-    end
+for i=1:Nimg
+    subplot(3,Nimg,Nimg+i)
+    imagesc(single(logData.sig3d(:,:,nth(i),2)));caxis([0,0.4]);
+    if i==1;ylabel('YZ','FontWeight','bold');end
+    xticks(1:(Mat-1)/2:Mat);xticklabels({int2str(-FOV/2),'0',int2str(FOV/2)});
+    yticks(1:(Mat-1)/2:Mat);yticklabels({int2str(-FOV/2),'0',int2str(FOV/2)});
+end
+for i=1:Nimg
+    subplot(3,Nimg,2*Nimg+i)
+    imagesc(single(logData.sig3d(:,:,nth(i),3)));caxis([0,0.4]);
+    if i==1;ylabel('XZ','FontWeight','bold');end
+    xticks(1:(Mat-1)/2:Mat);xticklabels({int2str(-FOV/2),'0',int2str(FOV/2)});
+    yticks(1:(Mat-1)/2:Mat);yticklabels({int2str(-FOV/2),'0',int2str(FOV/2)});
 end
 
 return

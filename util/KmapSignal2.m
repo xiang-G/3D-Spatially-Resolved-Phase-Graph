@@ -28,7 +28,7 @@ scannedData = textscan(data,'%f32 %f32 %f32 %f32 %f32 %f32'); %single instead of
 fclose(fid);
 
 %% output nspins per echo
-NKperEcho=[];
+NKperEcho=0;
 fid2 = fopen([dataFile(1:end-4),'_Nspins.txt'],'r');
 eof               = false;
 while ~eof

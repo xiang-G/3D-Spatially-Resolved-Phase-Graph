@@ -1,4 +1,4 @@
-%% DFT
+%% IMG_DFT
 function slogData=IMG_DFT(varargin)
 slogData = varargin{1};
 global FOV;
@@ -20,69 +20,59 @@ else
     end
 end
 N=length(FOVx);
-NE=length(slogData.NKperEcho);
+NE=length(slogData.NKperEcho)-1;
+NKperEcho=slogData.NKperEcho;
 %% signal indensity (x dim without deltaG, y dim with deltaG)
 if ~TDImage
     disp(['K_filter = ',num2str(2*pi/(res*1e3)/2)]);
     pos = zeros(3,N);
-    posx=pos;posx(1,:)=FOVx;   
-    sigx = zeros(N,NE-1); 
-    for i=1:NE-1
-        [sigx(:,i)]=DFT(slogData,posx*1e3,res*1e3,slogData.NKperEcho(i:i+1)); %signal without motion
+    posx=pos;posx(1,:)=FOVx;%posx(2,:)=FOVy;posx(3,:)=0;   
+    sigx = zeros(N,NE); 
+    for i=1:NE
+        [sigx(:,i)]=DFT(slogData,posx*1e3,res*1e3,NKperEcho(i:i+1)); 
     end
     %write back
     slogData.sigxy = (sigx);
     slogData.sig3d = abs(sigx);
     slogData.pha3d = angle(sigx);
 else
+    [posxy,posyz,posxz]= deal(zeros(3,N*N));
+    [sigxy,sigyz,sigxz]= deal(zeros(N*N,NE));
+    disp(['K_filter = ',num2str(2*pi/(res*1e3)/2)]); % don't foget to divid by 2
+
     %% 2D Image (x-y)
-    pos = zeros(3,N*N);
-    posxy=pos;
     posxy(1,:)=repmat(FOVx,[1,N]);
     posxy(2,:)=col(repmat(FOVy',[1,N])');
-    posxy(3,:)=0;%ceil(FOV/2);
-    disp(['K_filter = ',num2str(2*pi/(res*1e3)/2)]); % don't foget to divid by 2
-    sigxy = zeros(N*N,NE-1);
-    for i=1:NE-1
-        [sigxy(:,i)]=DFT(slogData,posxy*1e3,res*1e3,slogData.NKperEcho(i:i+1)); %signal with motion
+    posxy(3,:)=0;
+    for i=1:NE
+        [sigxy(:,i)]=DFT(slogData,posxy*1e3,res*1e3,NKperEcho(i:i+1)); 
     end
-    %% simulated signal
-    ImgPerExy = abs(reshape(sigxy,[N,N,NE-1]));%
-    PhasePerExy = angle(reshape(sigxy,[N,N,NE-1]));%
+    ImgPerExy = abs(reshape(sigxy,[N,N,NE]));%
+    PhasePerExy = angle(reshape(sigxy,[N,N,NE]));%
     
     %% 2D Image (y-z)
-    pos = zeros(3,N*N);
-    posxy=pos;
-    posxy(1,:)=0;%ceil(FOV/2);
-    posxy(2,:)=repmat(FOVy,[1,N]);
-    posxy(3,:)=col(repmat(FOVz',[1,N])');
-    disp(['K_filter = ',num2str(2*pi/(res*1e3)/2)]);
-    sigxy = zeros(N*N,NE-1);
-    for i=1:NE-1
-        [sigxy(:,i)]=DFT(slogData,posxy*1e3,res*1e3,slogData.NKperEcho(i:i+1)); %signal with motion
+    posyz(1,:)=0;
+    posyz(2,:)=repmat(FOVy,[1,N]);
+    posyz(3,:)=col(repmat(FOVz',[1,N])');
+    for i=1:NE
+        [sigyz(:,i)]=DFT(slogData,posyz*1e3,res*1e3,NKperEcho(i:i+1)); 
     end
-    %% simulated signal
-    ImgPerEyz = abs(reshape(sigxy,[N,N,NE-1]));%
-    PhasePerEyz = angle(reshape(sigxy,[N,N,NE-1]));%
+    ImgPerEyz = abs(reshape(sigyz,[N,N,NE]));%
+    PhasePerEyz = angle(reshape(sigyz,[N,N,NE]));%
     
     %% 2D Image (x-z)
-    pos = zeros(3,N*N);
-    posxy=pos;
-    posxy(1,:)=repmat(FOVx,[1,N]);
-    posxy(2,:)=0;%ceil(FOV/2);
-    posxy(3,:)=col(repmat(FOVz',[1,N])');
-    disp(['K_filter = ',num2str(2*pi/(res*1e3)/2)]);
-    sigxy = zeros(N*N,NE-1);
-    for i=1:NE-1
-        [sigxy(:,i)]=DFT(slogData,posxy*1e3,res*1e3,slogData.NKperEcho(i:i+1)); %signal with motion
+    posxz(1,:)=repmat(FOVx,[1,N]);
+    posxz(2,:)=0;
+    posxz(3,:)=col(repmat(FOVz',[1,N])');
+    for i=1:NE
+        [sigxz(:,i)]=DFT(slogData,posxz*1e3,res*1e3,NKperEcho(i:i+1)); 
     end
-    %% simulated signal
-    ImgPerExz = abs(reshape(sigxy,[N,N,NE-1]));%
-    PhasePerExz = angle(reshape(sigxy,[N,N,NE-1]));%
+    ImgPerExz = abs(reshape(sigxz,[N,N,NE]));%
+    PhasePerExz = angle(reshape(sigxz,[N,N,NE]));%
     
     %%
-    slogData.sig3d = cat(3,ImgPerExy,ImgPerEyz,ImgPerExz);
-    slogData.pha3d = cat(3,PhasePerExy,PhasePerEyz,PhasePerExz);
+    slogData.sig3d = cat(4,ImgPerExy,ImgPerEyz,ImgPerExz);
+    slogData.pha3d = cat(4,PhasePerExy,PhasePerEyz,PhasePerExz);
 end
 end
 
@@ -94,8 +84,9 @@ elseif slogData.KmapSignal == 2
     kvec = slogData.kvector(1+NKlength(1):NKlength(2),:);
     sk = slogData.signal(1+NKlength(1):NKlength(2),1)+1i*slogData.signal(1+NKlength(1):NKlength(2),2);
 end
-kvecF = kvec((abs(kvec(:,1))<=2*pi/resseq/2)&(abs(kvec(:,2))<=2*pi/resseq/2)&(abs(kvec(:,3))<=2*pi/resseq/2),:);
-skF = sk((abs(kvec(:,1))<=2*pi/resseq/2)&(abs(kvec(:,2))<=2*pi/resseq/2)&(abs(kvec(:,3))<=2*pi/resseq/2),:);
+kfilter=2*pi/resseq/2;
+kvecF = kvec((abs(kvec(:,1))<=kfilter)&(abs(kvec(:,2))<=kfilter)&(abs(kvec(:,3))<=kfilter),:);
+skF = sk((abs(kvec(:,1))<=kfilter)&(abs(kvec(:,2))<=kfilter)&(abs(kvec(:,3))<=kfilter),:);
 
 s = skF'*exp(-1i*kvecF*pos);
 end

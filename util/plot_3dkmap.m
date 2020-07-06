@@ -1,6 +1,13 @@
-% load matrix3d.mat
+% function plot_3dkmap(Kgrid3D,Bgrid3D,timestamp)
+% in:                   Kgrid3D; 3D(K-vector grids) + 1D(time)
+%                       Bgrid3D; 3D(Background grids) + 1D(time)
+%                       timestamp; Nth image(optimal)
+% out:
+%
+% author: xiang gao
+% xiang.gao@uniklinik-freiburg.de
 
-function plot_3dkmap(Kgrid3D,bgmatrix,timestamp)
+function plot_3dkmap(Kgrid3D,Bgrid3D,timestamp)
 global Kmax2Pi;
 global Mat;
 global TDImage;
@@ -8,10 +15,12 @@ global plot3proj;
 if isempty(plot3proj)
     plot3proj=true;
 end
-if isempty(bgmatrix)
+if isempty(Bgrid3D)
     TDImage = false;
 end
-
+if nargin<3
+    timestamp=[];
+end
 values=[];
 coords=[];
 count=0;
@@ -31,12 +40,12 @@ if TDImage
     valuesB=[];
     coordsB=[];
     count=0;
-    for i=1:size(bgmatrix,1)
-        for j=1:size(bgmatrix,2)
-            for k=1:size(bgmatrix,3)
-                if bgmatrix(i,j,k)>0
+    for i=1:size(Bgrid3D,1)
+        for j=1:size(Bgrid3D,2)
+            for k=1:size(Bgrid3D,3)
+                if Bgrid3D(i,j,k)>0
                     count=count+1;
-                    valuesB(count)=bgmatrix(i,j,k);
+                    valuesB(count)=Bgrid3D(i,j,k);
                     coordsB=cat(1,coordsB,[i j k]);
                 end
             end
@@ -48,7 +57,7 @@ if TDImage
     count=0;
     for i=1:size(coords,1)
         if (all(coordsB(1,:)<coords(i,:) & coords(i,:)<coordsB(end,:)))
-            % we don't count the kvecotrs who sits on the gird( to be consistant
+            % we don't count the kvecotrs who sits on the gird(to be consistant
             % with image domain who has higher precision than k-gird)
             count=count+1;
             valuesInBox(count)=values(i);
@@ -60,7 +69,7 @@ if TDImage
     if Mat==1
         scatter3(coordsB(:,1),coordsB(:,2),coordsB(:,3),[],valuesB','ko');
     else
-        scatter3(coordsB(:,1),coordsB(:,2),coordsB(:,3),[],valuesB','k.');
+        scatter3(coordsB(:,1),coordsB(:,2),coordsB(:,3),60,valuesB','k.');
     end
     hold on
     if ~isempty(coords)
@@ -75,31 +84,32 @@ if TDImage
         scatter3(coordsInBox(:,1),size(Kgrid3D,2)+0*coordsInBox(:,2),coordsInBox(:,3),[],valuesInBox','p');
     end
     hold off
-    if isnan(timestamp)
-        legend('Receive Zone','Whole K-vectors','Proj. XY','Proj. YZ','Proj. XZ','Location','northwest');
+    if ~plot3proj
+        legend('Sampled area','3D k-vectors');
         set(legend,...
-            'Position',[0.0016174430593756 0.478469762050102 0.142276420068692 0.121468923186178]);
-    else
-        title(['3D K-Space Time ',int2str(timestamp)]);
+            'Position',[0.00630073579088022 0.535565113347637 0.143292680201007 0.104422601640078]);
+    end
+    if plot3proj&& ~isempty(timestamp)
+        title(['Time ',int2str(timestamp)]);
         if timestamp==3
-            legend('Receive Zone','Whole K-vectors','Proj. XY','Proj. YZ','Proj. XZ','Location','northwest');
+            legend('Sampled area','3D k-vectors','Proj. XY','Proj. YZ','Proj. XZ','Location','northwest');
             set(legend,...
-                'Position',[-0.0186528272108947 0.43782627308726 0.142276420068692 0.159448814497689]);
-                %'Position',[0.0016174430593756 0.478469762050102 0.142276420068692 0.121468923186178]);
+                'Position',[0.447810587423252 0.423250434344067 0.142276420068692 0.171627366100058]);
         end
     end
     colormap(winter);
-    colorbar;zlabel('k [1/m]')
+    colorbar;
+    zlabel('K_z [1/m]');set(gca,'FontSize',12);
     view(60,30)
-    xticks(0:(size(bgmatrix,1)+1)/4:size(bgmatrix,1)+1)
-    yticks(0:(size(bgmatrix,2)+1)/4:size(bgmatrix,2)+1)
-    zticks(0:(size(bgmatrix,3)+1)/4:size(bgmatrix,3)+1)
+    xlabel('K_x');ylabel('K_y');
+    xticks(0:(size(Bgrid3D,1)+1)/2:size(Bgrid3D,1)+1)
+    yticks(0:(size(Bgrid3D,2)+1)/2:size(Bgrid3D,2)+1)
+    zticks(0:(size(Bgrid3D,3)+1)/2:size(Bgrid3D,3)+1)
     xticklabels(Ticklabel(Kmax2Pi))
     yticklabels(Ticklabel(Kmax2Pi))
     zticklabels(Ticklabel(Kmax2Pi))
-    axis([0,size(bgmatrix,1)+1,0,size(bgmatrix,2)+1,0,size(bgmatrix,3)+1])
+    axis([0,size(Bgrid3D,1)+1,0,size(Bgrid3D,2)+1,0,size(Bgrid3D,3)+1])
 else
-    %     figure;
     if ~isempty(coords)
         scatter3(coords(:,1),coords(:,2),coords(:,3),[],values','*');
     end
@@ -111,7 +121,7 @@ end
 
 function string=Ticklabel(factor)
 
-string = [{mat2str(-1000*factor)},{mat2str(-500*factor)},...
-    {mat2str(0*factor)},{mat2str(500*factor)},{mat2str(1000*factor)}];
-
+% string = [{mat2str(-1000*factor)},{mat2str(-500*factor)},...
+%     {mat2str(0*factor)},{mat2str(500*factor)},{mat2str(1000*factor)}];
+string = [{mat2str(-1000*factor)},{mat2str(0*factor)},{mat2str(1000*factor)}];
 end
