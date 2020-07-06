@@ -2,14 +2,14 @@
 An open access recursive magnetization evolution algorithm framework is proposed for simulating arbitrary pulse sequences in presence of *time-variant gradients* with *arbitrary orientations* in three dimensions. 
 It overcomes the sequence symmetry requirements of the extended phase graph algorithm for solving the Bloch-Torrey equation efficiently, and could present the signal modulation in the 3D spatial domain. 
 
-#Author： 
--Xiang Gao, xiang.gao@uniklinik-freiburg.de
--V. G. Kiselev 
--Maxim Zaitsev
+# Author： 
+- Xiang Gao, xiang.gao@uniklinik-freiburg.de
+- V. G. Kiselev 
+- Maxim Zaitsev
 
 # Demo: Stejskal-Tanner pulse sequence simulation:  
--Input file: *demo_seq.txt  
--Simulation command: *3D_SR-PG.exe demo_seq.txt  
+-Input file: *demo_seq.txt*  
+-Simulation command: *3D_SR-PG.exe demo_seq.txt*  
 -Output file: *output1.txt* and *output1_Nspins.txt*  
 
 To interpret the output file, one could use *util/KmapSignal2.m* function, which returns:  
@@ -32,4 +32,5 @@ The Details of those two examples are reported in the corresponding paper:
   
 # Updated
 Anisotropic diffusion simulation is supported
--Simulation command: *3D_SR-PG_tensor.exe demo_seq_dt.txt  
+- Simulation command: *3D_SR-PG_tensor.exe demo_seq_dt.txt*  
+  
