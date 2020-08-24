@@ -4,11 +4,8 @@
 clear;clc;clear global;
 global FOV;
 global Mat;
-global Kmax2Pi;     %Skope of 3D-K space
 global TDImage;     %Output 3D image or 1D signal intensity
 TDImage=true;
-global plot3proj;
-plot3proj=false;
 
 %==========================================================================
 %% sequence preparation
@@ -17,7 +14,6 @@ BasicPulse=4;
 gamma = 42.5756; %MHz/T
 FOV = 192; %mm
 Mat = 64;
-Kmax2Pi= ceil(Mat/FOV*2*10)/10; %default Kmax2Pi=3;
 Position = [];%phantomP;
 RF_BandWidth = 4000; %Hz
 Gs = RF_BandWidth/gamma/FOV;%mT/m
@@ -85,18 +81,12 @@ logData=IMG_DFT(logData,Position);
 %==========================================================================
 %% OUTPUT
 %==========================================================================
-%% prep 3D kspace graph
-% post-gradding for 3d kmap (due to memory limitation)
-Post_grid=[1,1,1]; %post-grid for dKx,dKy,dKz
-dK = Post_grid/FOV*1e3;%1/m
-[Kgrid3D, Bgrid3D]=prep_3dkmap(logData,dK);
-
 %% plot 3D kspace graph && projected image
 outecho=3:BasicPulse:NPulse;
 for i=1:length(outecho)
     figure; set(gcf,'outerposition',[0,0,1000,500]);
     subplot(1,2,1);
-    plot_3dkmap(squeeze((Kgrid3D(:,:,:,outecho(i)))),Bgrid3D(:,:,:,outecho(i)))
+    plot_kmap3d(logData,outecho(i),ceil(Mat/FOV*2*10)*100);
     subplot(1,2,2);
     imagesc(single(abs(logData.sig3d(:,:,outecho(i)))).*imresize(double(80*dicomread('Brain.dcm')),Mat/length(double(dicomread('Brain.dcm')))));
     colormap(gca,'gray')

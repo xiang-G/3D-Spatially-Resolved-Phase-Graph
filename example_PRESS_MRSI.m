@@ -6,7 +6,6 @@
 clear;clc;clear global;
 global FOV;
 global Mat;
-global Kmax2Pi;     %Scope of 3D k-space mapping
 global TDImage;     %Output 3D spatial modulation function or 1D signal intensity
 TDImage=true;
 
@@ -17,7 +16,6 @@ Nphaccyc=1; %num of phase cycle;
 gamma = 42.5756; %MHz/T
 FOV = 48; %mm
 Mat = 16;
-Kmax2Pi= 0.5; %default Kmax2Pi=3;
 Position = [];%phantomP;
 RF_BandWidth = 4000; %Hz
 Gs = RF_BandWidth/gamma/FOV;%mT/m
@@ -32,7 +30,7 @@ Gy = [(-KSpoil1-KGs/2)/TE1hf; (-KSpoil1-KGs/2)/TE1hf; -KSpoil2/TE2hf;         -K
 Gz = [-KSpoil1/TE1hf;         -KSpoil1/TE1hf;         (-KSpoil2-KGs/2)/TE2hf; (-KSpoil2-KGs/2)/TE2hf;0;0]./gamma;
 
 % freqoff=[0,0,0];
-freqoff=1*[1,0.5,1.5]; %hz/cm
+freqoff=0.1*[1,0.5,1.5]; %hz/cm
 dG = freqoff./10./gamma;
 Gx = Gx+dG(:,1);  Gy = Gy+dG(:,2);  Gz = Gz+dG(:,3);
 
@@ -121,19 +119,15 @@ logData=IMG_DFT(logData,Position);
 %==========================================================================
 %% OUTPUT
 %==========================================================================
-%% prep 3D kspace graph
-% post-gradding for 3d kmap (due to memory limitation)
-Post_grid=[1,1,1]; %post-grid for dKx,dKy,dKz
-dK = Post_grid/FOV*1e3;%1/m
-[Kgrid3D, Bgrid3D]=prep_3dkmap(logData,dK);
+%% plot 3D kspace graph
 % we plot from second echo
 Nimg=NPulse-2;
 nth = [2,4,5,6];
-%% plot 3D kspace graph
+
 figure; set(gcf,'outerposition',[0 0 1000 800]);
 for i=1:Nimg
     subplot(2,Nimg/2,i);
-    plot_3dkmap(squeeze((Kgrid3D(:,:,:,nth(i)))),Bgrid3D(:,:,:,nth(i)),i)
+    plot_kmap3d(logData,nth(i),2000,i);
 end
 
 %% plot projected image
