@@ -37,8 +37,8 @@ for i=1:NPulse
     TEa(i+1)=(TRa(i)-TEa(i)).*theta_ratio(i+1);
 end
 TRa(i+1)=TRssfp;
-TEa=TEa(2:end);
-TRa=TRa(2:end);
+TEa=TEa(1:NPulse);
+TRa=TRa(1:NPulse);
 Rf=alpha(1:NPulse);
 %==========================================================================
 %% simulation preparation
@@ -74,10 +74,10 @@ else
     sequence.axes=repmat([0;180],NPulse/2,1);
 end
 % sequence.diff=0;                       % mcm^2/ms  %2 for water
-sequence.diffTensor=[0;0;0;0;0;0;0;0;0];  % mcm^2/ms  %2e4 for 3He in lung
+sequence.diffTensor=[0;0;0;0;0;0;0;0;0];  % mcm^2/ms
 sequence.Omega=0;                      % Hz, frequency offset
 sequence.ktolerance=1.e-8;             % computational parameter:
-sequence.ktolerance_phys=50.e-6;       % grid merging size 1e-3 = 1*(1/mm)
+sequence.ktolerance_phys=2.e-6;       % grid merging size 1e-3 = 1*(1/mm)
 sequence.nOutput = 1;
 matlabseq = ['matlabseq_',int2str(sequence.nOutput),'.txt'];
 matlab2c(sequence, matlabseq);
@@ -123,7 +123,7 @@ else
     center=size(logData.sig3d,1)/2;
     figure;
     plot(logData.sig3d(:,end));hold on
-    xticks([center-250,center-125,center,center+125,center+250]),ylim([0,0.5])
+    xticks([center-250,center-125,center,center+125,center+250]);xlim([0,Mat])
     set(gca,'xticklabels',{'-500','-250','0','250','500'});ylabel('|M_\perp| / M_0')
 end
 return

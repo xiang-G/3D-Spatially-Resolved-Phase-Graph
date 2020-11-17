@@ -1,4 +1,4 @@
-            "This is a sequence file for the program '3D_SR-PG.exe'. \n"
+            "This is a sequence file for the program '3D_SR-PG_tensor.exe'. \n"
             "The name of this file (for example `demo_seq.txt')\n"
             "should be given when the program is called. For example: \n"
             "3D_SR-PG.exe seq.txt \n"

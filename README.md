@@ -8,8 +8,8 @@ It overcomes the sequence symmetry requirements of the extended phase graph algo
 - Maxim Zaitsev
 
 # Demo: Stejskal-Tanner pulse sequence simulation:  
--Input file: *demo_seq.txt*  
--Simulation command: *3D_SR-PG.exe demo_seq.txt*  
+-Input file: *demo_seq_dt.txt*  
+-Simulation command: *3D_SR-PG_tensor.exe demo_seq_dt.txt*  
 -Output file: *output1.txt* and *output1_Nspins.txt*  
 
 To interpret the output file, one could use *util/KmapSignal2.m* function, which returns:  
@@ -20,8 +20,8 @@ To further transform the signal into spatial domain, one can use function *util/
 -*global FOV; FOV=192;*  
 -*global Mat; Mat=64;*  
 It returns:  
--*slogData.sig3d*, 2D Image(Mag) of x-y, y-z, x-z plane for each echo (Necho starts from the 2nd). Image is pre-filtered by kmax(pi* Mat) in Kspace    
--*slogData.pha3d*, 2D Image(Phas) of x-y, y-z, x-z plane for each echo (Necho starts from the 2nd). Image is pre-filtered by kmax(pi* Mat/FOV) in Kspace    
+-*slogData.sig3d*, 2D Image(Mag) of x-y, y-z, x-z plane for each echo. Image can be pre-filtered by setting kfilter in Kspace    
+-*slogData.pha3d*, 2D Image(Phas) of x-y, y-z, x-z plane for each echo. Image can be pre-filtered by setting kfilter in Kspace    
 
 # Two illustrative examples are presented in  
 -*example_offres_MRF.m*, Fast off-resonance calculation for Pseudo-SSFP dictionary building in magnetic resonance fingerprinting  
@@ -32,5 +32,4 @@ The Details of those two examples are reported in the corresponding paper:
   
 # Updated
 Anisotropic diffusion simulation is supported
-- Simulation command: *3D_SR-PG_tensor.exe demo_seq_dt.txt*  
   

@@ -77,6 +77,7 @@ end
 end
 
 function [s]=DFT(slogData,pos,resseq,NKlength) %for KmapSignal
+global TDImage;
 if slogData.KmapSignal == 1
     kvec = slogData.kvector(1+NKlength(1):NKlength(2)-1,:);
     sk = slogData.signal(1+NKlength(1):NKlength(2)-1,1)+1i*slogData.signal(1+NKlength(1):NKlength(2)-1,2);
@@ -84,9 +85,12 @@ elseif slogData.KmapSignal == 2
     kvec = slogData.kvector(1+NKlength(1):NKlength(2),:);
     sk = slogData.signal(1+NKlength(1):NKlength(2),1)+1i*slogData.signal(1+NKlength(1):NKlength(2),2);
 end
-kfilter=2*pi/resseq/2;
-kvecF = kvec((abs(kvec(:,1))<=kfilter)&(abs(kvec(:,2))<=kfilter)&(abs(kvec(:,3))<=kfilter),:);
-skF = sk((abs(kvec(:,1))<=kfilter)&(abs(kvec(:,2))<=kfilter)&(abs(kvec(:,3))<=kfilter),:);
-
-s = skF'*exp(-1i*kvecF*pos);
+if isempty(TDImage) || TDImage
+    kfilter=2*pi/resseq/2;
+    kvecF = kvec((abs(kvec(:,1))<=kfilter)&(abs(kvec(:,2))<=kfilter)&(abs(kvec(:,3))<=kfilter),:);
+    skF = sk((abs(kvec(:,1))<=kfilter)&(abs(kvec(:,2))<=kfilter)&(abs(kvec(:,3))<=kfilter),:);    
+    s = skF'*exp(-1i*kvecF*pos);
+else
+    s = sk'*exp(-1i*kvec*pos);
+end
 end
