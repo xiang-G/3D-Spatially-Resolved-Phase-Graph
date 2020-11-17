@@ -1,7 +1,7 @@
 function [phs1,phs2,phs3]=press_phacyc(nth,Nphaccyc)
 switch Nphaccyc
     case 1
-        phs1=0;phs2=0;phs3=0;
+        phs1=0;phs2=90;phs3=90;
     case 2
         if nth==1; phs1=180;phs2=0;phs3=180;
         else;  phs1=0;phs2=0;phs3=0;end

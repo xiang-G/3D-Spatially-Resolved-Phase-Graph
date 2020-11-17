@@ -26,10 +26,10 @@ title('Protocol parameters');set(gca,'FontSize',fz);
 subplot(2,2,2);
 a=1/2*(3.^(1:logData2{1}.sequence.npulse)-1);
 for i=1:Nsim
-semilogy(logData2{i}.NKperEcho,'linewidth',lw);hold on;
+semilogy(1.5*logData2{i}.NKperEcho,'linewidth',lw);hold on; %adding kz for each echo, which is skipped for the output file.
 legendInfo{i} = ['Kg ',mat2str(logData2{i}.sequence.ktolerance_phys*1e6),' rad/m']; 
 end
-semilogy(a(1:15),'k--','linewidth',lw);hold off;    
+semilogy(a(1:20),'k--','linewidth',lw);hold off;    
 legend(legendInfo,'Location','southeast');
 xlabel('Num of RF pulses');
 ylabel('Num of K vectors');
@@ -63,7 +63,7 @@ for i=1:Nsim
 end
 xticks([center-250,center-125,center,center+125,center+250])
 set(gca,'xticklabels',{'-500','-250','0','250','500'});ylabel('|M_\perp| / M_0')
-xlabel('\omega [rad/s]');%ylim([0,0.3])
+xlabel('\omega [rad/s]');xlim([1,628*2]);%ylim([0,0.3])
 title(['pSSFP  Spectrum']);
 set(gca,'FontSize',fz);
 end

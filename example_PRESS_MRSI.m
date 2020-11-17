@@ -23,14 +23,14 @@ Gs_Duration = 4; %ms
 KGs = Gs*Gs_Duration*gamma;
 TE1hf = 7; %ms
 TE2hf = 8; %ms
-KSpoil1 = 20000./FOV; %1/m
-KSpoil2 = 20000./FOV; %1/m
+KSpoil1 = 500; %1/m
+KSpoil2 = 500; %1/m
 Gx = [-KSpoil1/TE1hf;         -KSpoil1/TE1hf;         -KSpoil2/TE2hf;         -KSpoil2/TE2hf;0;0]./gamma;
 Gy = [(-KSpoil1-KGs/2)/TE1hf; (-KSpoil1-KGs/2)/TE1hf; -KSpoil2/TE2hf;         -KSpoil2/TE2hf;0;0]./gamma;
 Gz = [-KSpoil1/TE1hf;         -KSpoil1/TE1hf;         (-KSpoil2-KGs/2)/TE2hf; (-KSpoil2-KGs/2)/TE2hf;0;0]./gamma;
 
 % freqoff=[0,0,0];
-freqoff=0.1*[1,0.5,1.5]; %hz/cm
+freqoff=0.1*[1,-2,3]; %hz/cm
 dG = freqoff./10./gamma;
 Gx = Gx+dG(:,1);  Gy = Gy+dG(:,2);  Gz = Gz+dG(:,3);
 
@@ -41,15 +41,15 @@ sequence=cell(Nphaccyc,1);
 for i=1:Nphaccyc
     NPulse=6;
     sequence{i}.npulse=NPulse;
-    sequence{i}.time=[TE1hf;TE1hf;TE2hf;TE2hf;250;250];% ms
-    sequence{i}.echo=[TE1hf;TE1hf;TE2hf;TE2hf;250;250];% ms
+    sequence{i}.time=[TE1hf;TE1hf;TE2hf;TE2hf;500;500];% ms
+    sequence{i}.echo=[TE1hf;TE1hf;TE2hf;TE2hf;500;500];% ms
     sequence{i}.gradx=Gx;
     sequence{i}.grady=Gy;
     sequence{i}.gradz=Gz;
     sequence{i}.velocityx=zeros(1,NPulse);     % transport velocity in mm/s
     sequence{i}.velocityy=zeros(1,NPulse);     % transport velocity in mm/s
     sequence{i}.velocityz=zeros(1,NPulse);     % transport velocity in mm/s
-    sequence{i}.angle=[90/2;180/2;0;180/2;0;0];
+    sequence{i}.angle=[90;180/2;0;180/2;0;0];
     sequence{i}.axes=[0,0*ones(1,NPulse-1)];  % rotation axis.
     [phs1,phs2,phs3]=press_phacyc(i,Nphaccyc);
     sequence{i}.axes=[phs1,phs2,0,phs3,0,0];  % rotation axis.

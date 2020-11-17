@@ -8,8 +8,8 @@ It overcomes the sequence symmetry requirements of the extended phase graph algo
 - Maxim Zaitsev
 
 # Demo: Stejskal-Tanner pulse sequence simulation:  
--Input file: *demo_seq.txt*  
--Simulation command: *3D_SR-PG.exe demo_seq.txt*  
+-Input file: *demo_seq_dt.txt*  
+-Simulation command: *3D_SR-PG_tensor.exe demo_seq_dt.txt*  
 -Output file: *output1.txt* and *output1_Nspins.txt*  
 
 To interpret the output file, one could use *util/KmapSignal2.m* function, which returns:  
@@ -32,5 +32,4 @@ The Details of those two examples are reported in the corresponding paper:
   
 # Updated
 Anisotropic diffusion simulation is supported
-- Simulation command: *3D_SR-PG_tensor.exe demo_seq_dt.txt*  
   

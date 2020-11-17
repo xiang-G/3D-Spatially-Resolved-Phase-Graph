@@ -45,7 +45,7 @@ if plot3proj
             sc=cat(1,sc,s(i));
         end
     end
-    if any(kc)
+    if ~isempty(kc)
         scatter3(kc(:,1),kc(:,2),-Kmax4plot+0*kc(:,3),[],sc,'s');hold on
         scatter3(-Kmax4plot+0*kc(:,1),kc(:,2),kc(:,3),[],sc,'^');hold on
         scatter3(kc(:,1),Kmax4plot+0*kc(:,2),kc(:,3),[],sc,'p');hold on
