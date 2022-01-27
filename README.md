@@ -3,7 +3,7 @@ An open access recursive magnetization evolution algorithm framework is proposed
 It overcomes the sequence symmetry requirements of the extended phase graph algorithm for solving the Bloch-Torrey equation efficiently, and could present the signal modulation in the 3D spatial domain. 
 
 # Author： 
-- Xiang Gao, xiang.gao@uniklinik-freiburg.de
+- Xiang Gao
 - V. G. Kiselev 
 - Maxim Zaitsev
 
@@ -28,8 +28,11 @@ It returns:
 -*example_PRESS_MRSI.m*, 3D signal evolution visualization for the PRESS-based magnetic spectroscopic imaging   
 
 The Details of those two examples are reported in the corresponding paper:  
-(TBC)  
-  
+[Three-dimensional spatially resolved phase graph framework](https://onlinelibrary.wiley.com/doi/full/10.1002/mrm.28732) 
+
+One more example:  
+[Strategies to improve intratrain prospective motion correction for turbo spin-echo sequences with constant flip angles](https://onlinelibrary.wiley.com/doi/10.1002/mrm.28763) 
+
 # Updated
 Anisotropic diffusion simulation is supported
   
